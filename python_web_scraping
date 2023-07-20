@@ -1,0 +1,26 @@
+import pandas as pd
+#import requests
+from bs4 import BeautifulSoup as bs
+import urllib.request as ureq
+
+def func_scrape(tag, element, element_desc, series_title):
+    e_list = []
+    for j in range(1,10):
+            url_p2 = f'https://www.gumtree.com.au/s-cars-vans-utes/vic/car/page-{j}/k0c18320l3008844?sort=rank'
+            htmlfile_ = ureq.urlopen(url_p2)
+            htmltext_= htmlfile_.read()
+            htmlfile_.close()
+            soup = bs(htmltext_,'html.parser')
+            car_title = soup.findAll(tag,{element:element_desc})
+            for title in car_title:
+                all_titles = title.text
+                e_list.append(all_titles)
+    return pd.Series(e_list, name=series_title)
+
+title_series = func_scrape('span','class','user-ad-row-new-design__title-span','car_title')
+
+price_series = func_scrape('span','class','user-ad-price-new-design__price','car_price')
+
+loc_series = func_scrape('div','class','user-ad-row-new-design__location','car_location')
+
+DF = pd.concat([title_series, price_series, loc_series], axis=1)
